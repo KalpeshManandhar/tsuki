@@ -1,0 +1,1 @@
+#define Renderer SDL_Renderer
