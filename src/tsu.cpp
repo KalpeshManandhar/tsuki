@@ -116,70 +116,6 @@ Vec2 * getConvexHull(Vec2 * points){
     return(NULL);
 }
 
-int smain (int argc, char ** argv){
-
-    Vec2 * points = getPoints();
-
-    Triangle t = {points[30], points[2], points[5]};
-    Circle c = { {556,556},50 };
-    Vec2 origin = {0,0};
-    if (SDL_Init(SDL_INIT_VIDEO)){
-        return(0);
-    }
-    SDL_Window * window = SDL_CreateWindow("tsuki", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIN_WIDTH, WIN_HEIGHT, SDL_WINDOW_RESIZABLE);
-    if (!window) {
-        return(0);
-    }
-    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (!renderer) {
-        return(0);
-    }
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-
-    SDL_Event event;
-    bool isRunning = true;
-    while (isRunning){
-        uint32_t frameStart = SDL_GetTicks();
-        while (SDL_PollEvent(&event)){
-            switch(event.type){
-                case SDL_QUIT:{
-                    isRunning = false;
-                    break;
-                }
-            }
-        }
-        SDL_SetRenderDrawColor(renderer, 255,255, 255, 255);
-        SDL_RenderClear(renderer);
-        // drawTriangle(renderer, &t, 255, 255, 0);
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        //SDL_RenderDrawPointsF(renderer, (SDL_FPoint*) points, POINTS_NUM);
-        // quadBezierCurve(renderer, t.a, t.b, t.c);
-        // cubicBezierCurve(renderer, t.a, t.b, t.c, { 708, 600 });
-        //SDL_RenderDrawLineF(renderer, points[0].x, points[0].y, points[1].x, points[1].y);
-
-        for (int i = 0; i<POINTS_NUM; i++){
-            renderHighlightPoint(renderer, &points[i]);
-        }
-
-        // drawCircle(renderer, &c, {0, 0, 255});
-        // drawShape(renderer, points, 6, {0,155,20});
-
-        SDL_RenderPresent(renderer);
-        uint32_t frameTime = SDL_GetTicks() - frameStart;
-        if (frameTime < FRAME_LIMIT)
-            SDL_Delay(FRAME_LIMIT - frameTime);
-
-    }
-    return(0);
-}
-
-//template <class T>
-//void swap(T &a,T &b){
-//    T temp = a;
-//    a = b;
-//    b = temp;
-//}
-
 void ArrayDump(int * arr, int size){
     for (int i=0; i<size; i++){
         std::cout<<arr[i]<<" ";
@@ -197,28 +133,7 @@ bool Vec2sortCondition(Vec2*a, int i, int j) {
 bool intSortCondition(int* a, int i, int j) {
     return(a[i] > a[j]);
 }
- 
-/* can sort based on any condition 
-just pass the condition function as a function pointer argument 
-    bool conditionFunc(<type> * array, int i, int j){
-        return(<insert condition for sort>)
-    }
-*/
-// template <class T>
-// void bubbleSort(T * a, int size, bool (*condition)(T*, int, int)){
-//     for (int i = 0; i < size; i++) {
-//         for (int j = i+1; j < size; j++) {
-//             if (condition(a, i, j)) {
-//                 swap(a[i], a[j]);
-//                 //ArrayDump(a,size);
-//             }
-//         }
-//     }
-// }
 
-int foo() {
-    return(55);
-}
 
 int main(int argc, char** argv) {
     SDL_Init(SDL_INIT_VIDEO);
@@ -321,9 +236,6 @@ int main(int argc, char** argv) {
 
     bubbleSort<int>(a, size);
     ArrayDump(a, size);
-
-    int (*bar)() = &foo;
-    int sd = bar();
 
     return(0);
 }
