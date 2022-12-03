@@ -2,6 +2,7 @@
 #include "tsu_sort.h"
 #include "SDL.h"
 
+#include <vector>
 #include <iostream>
 
 #define WIN_WIDTH   1280
@@ -77,11 +78,12 @@ int drawCircle(Renderer * ren, Circle * c, Color color){
     return(0);
 }
 
-int drawShape(Renderer* ren, Vec2* points, int n, Color color) {
+int drawShape(Renderer* ren, Shape* s, Color color) {
     SDL_SetRenderDrawColor(ren, color.x, color.y, color.z, 255);
-    for (int i=0; i<n-1; i++){
-        drawLine(ren, points[i], points[i+1]);
+    for (int i=0; i<s->n -1; i++){
+        drawLine(ren, s->points[i], s->points[i+1]);
     }
+    drawLine(ren, s->points[s->n - 1], s->points[0]);
     return(0);
 }
 
@@ -98,7 +100,7 @@ void renderHighlightPoint(Renderer * ren, Vec2 *point){
 
 Vec2 * getPoints(){
     Vec2 * points = new Vec2[POINTS_NUM];
-    int seed = 13;
+    int seed = 17;
     for (int i = 0; i< POINTS_NUM; i++){
         seed = LCGrandom(15, 3, 79, seed);
         points[i].x = lerp<float>(200, WIN_WIDTH-200, (float)seed/79);
@@ -108,12 +110,41 @@ Vec2 * getPoints(){
     return(points);
 }
 
-void sort(Vec2 * points){
-    int pivot;
-}
+Vec2 * getConvexHull(Vec2 * points, int &hullPointNo){
+    std::vector<Vec2> * hull = new std::vector<Vec2>;
+    int currentConfirmed = 0;
+    Vec2 *current = &points[0];
+    hull->push_back(points[currentConfirmed]);
+    while (current != &points[POINTS_NUM -1]){
+        Vec2 *next = &points[currentConfirmed + 1];
+        for (int i= currentConfirmed + 2;i< POINTS_NUM;i++){
+            if (crossMag(*next-*current, points[i] - *current) <= 0){
+                next = &points[i];
+                currentConfirmed = i;
+            }
+        }
+        current = next;
+        hull->push_back(*current);
+    }
+    currentConfirmed = POINTS_NUM - 1;
+    while (current != &points[0]) {
+        Vec2* next = &points[currentConfirmed - 1];
+        for (int i = currentConfirmed - 2;i >= 0;i--) {
+            if (crossMag(*next - *current, points[i] - *current) <= 0) {
+                next = &points[i];
+                currentConfirmed = i;
+            }
+        }
+        current = next;
+        hull->push_back(*current);
+    }
+    hull->pop_back();
 
-Vec2 * getConvexHull(Vec2 * points){
-    return(NULL);
+    /*Vec2* convexHull = new Vec2[hull.size()];
+    for (int i = 0; i<hull.size())*/
+    hullPointNo = hull->size();
+    
+    return(&(*hull)[0]);
 }
 
 void ArrayDump(int * arr, int size){
@@ -128,14 +159,12 @@ double getTime(){
 }
 
 bool Vec2sortCondition(Vec2*a, int i, int j) {
-    return(a[i].x > a[j].x);
-}
-bool intSortCondition(int* a, int i, int j) {
-    return(a[i] > a[j]);
+    return(a[i].x < a[j].x);
 }
 
 
-int main(int argc, char** argv) {
+// int main(int argc, char** argv) {
+int smain() {
     SDL_Init(SDL_INIT_VIDEO);
     // int a[] = {12,1,35,12,65,45,85,96,35,15,23,17,1556,15,4586,1235,1251,21545,123541,2125,212,21,325,12,54,21,544,213,23,51,23,588,5,56,99,5,65,456,52,2,56,548};
     int a[] = {
@@ -194,34 +223,6 @@ int main(int argc, char** argv) {
     int size = sizeof(a) / sizeof(int);
     double start;
     // start = getTime();
-    // // selection sort? insertion sort? 0.0015
-    // for (int i = 0; i<size -1; i++){
-    //     if (a[i]>a[i+1]){
-    //         swap(a[i], a[i+1]);
-    //         //ArrayDump(a, size);
-
-    //         for (int j = i; j>0; j--){
-    //             if (a[j]<a[j-1]){
-    //                 swap(a[j], a[j-1]);
-    //                 //ArrayDump(a,size);
-    //             }
-    //         }
-    //     }
-    // }
-    // std::cout<< getTime() - start<<"\n";
-    // start = getTime();
-    // // bubblesort 0.00299
-    // for (int i = 0; i < size; i++) {
-    //     for (int j = i+1; j < size; j++) {
-
-    //         if (a[i] > a[j]) {
-    //             swap(a[i], a[j]);
-    //             //ArrayDump(a,size);
-    //         }
-    //     }
-    // }
-    // std::cout << getTime() - start<<"\n";
-
     // // quicksort 
     // for (int i = 0; i < size; i++) {
     //     for (int j = i+1; j < size; j++) {
@@ -234,7 +235,7 @@ int main(int argc, char** argv) {
     // }
     // std::cout << getTime() - start<<"\n";
 
-    bubbleSort<int>(a, size);
+    insertionSort<int>(a, size);
     ArrayDump(a, size);
 
     return(0);
@@ -242,11 +243,11 @@ int main(int argc, char** argv) {
 
 
 
-// int smain(int argc, char** argv) {
-int smain() {
+int main(int argc, char** argv) {
+// int smain() {
 
     Vec2* points = getPoints();
-    bubbleSort<Vec2>(points, POINTS_NUM, &Vec2sortCondition);
+    insertionSort<Vec2>(points, POINTS_NUM, &Vec2sortCondition);
     Triangle t = { points[30], points[2], points[5] };
     Circle c = { {556,556},50 };
     Vec2 origin = { 0,0 };
@@ -262,6 +263,8 @@ int smain() {
         return(0);
     }
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    Shape a;
+    a.points = getConvexHull(points, a.n);
 
     SDL_Event event;
     bool isRunning = true;
@@ -277,19 +280,21 @@ int smain() {
         }
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
-        drawTriangle(renderer, &t, 255, 255, 0);
+        //drawTriangle(renderer, &t, 255, 255, 0);
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         //SDL_RenderDrawPointsF(renderer, (SDL_FPoint*) points, POINTS_NUM);
-        quadBezierCurve(renderer, t.a, t.b, t.c);
-        cubicBezierCurve(renderer, t.a, t.b, t.c, { 708, 600 });
+        //quadBezierCurve(renderer, t.a, t.b, t.c);
+        //cubicBezierCurve(renderer, t.a, t.b, t.c, { 708, 600 });
         //SDL_RenderDrawLineF(renderer, points[0].x, points[0].y, points[1].x, points[1].y);
+
 
         for (int i = 0; i < POINTS_NUM; i++) {
             renderHighlightPoint(renderer, &points[i]);
         }
 
         // drawCircle(renderer, &c, {0, 0, 255});
-        // drawShape(renderer, points, 6, {0,155,20});
+        drawShape(renderer, &a, {0,155,20});
+
 
         SDL_RenderPresent(renderer);
         uint32_t frameTime = SDL_GetTicks() - frameStart;

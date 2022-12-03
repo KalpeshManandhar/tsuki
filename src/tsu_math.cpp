@@ -42,6 +42,8 @@ float len(Vec2 a){
 float dot(Vec2 a, Vec2 b){
     return(a.x * b.x + a.y * b.y);
 }
+
+// clockwise = +ve; and anticlockwise = -ve
 float crossMag(Vec2 a, Vec2 b){
     return(a.x * b.y - b.x * a.y);
 }

@@ -67,6 +67,11 @@ struct Triangle{
 	Vec2 a, b, c;
 };
 
+struct Shape{
+	Vec2 *points;
+	int n;
+};
+
 //int drawTriangle(Renderer * ren, Triangle * t, uint8_t r, uint8_t g, uint8_t b);
 
 template <class T>
